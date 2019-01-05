@@ -61,5 +61,12 @@ typings/
 .next
 
 yarn.lock
+yalc.lock
 
-lib/
+src/
+__tests__/
+.vscode/
+.babelrc
+.eslint*
+gulpfile.js
+.yalc/

@@ -1,0 +1,49 @@
+{
+  "version": "0.2.0",
+  "configurations": [{
+    "name": "Launch Colour Demo",
+    "type": "node",
+    "request": "launch",
+    "restart": false,
+    "stopOnEntry": false,
+    "args": ["lib/index.js"],
+    "cwd": "${workspaceRoot}",
+    "console": "integratedTerminal",
+    "sourceMaps": true,
+    "outFiles": ["${workspaceRoot}/build/**/*.js"],
+    "protocol": "inspector",
+    "windows": {
+      "useWSL": false  
+    },
+  }, {
+    "name": "Launch Canvas Demo",
+    "type": "node",
+    "request": "launch",
+    "restart": false,
+    "stopOnEntry": false,
+    "args": ["lib/canvas.js"],
+    "cwd": "${workspaceRoot}",
+    "console": "integratedTerminal",
+    "sourceMaps": true,
+    "outFiles": ["${workspaceRoot}/build/**/*.js"],
+    "protocol": "inspector",
+    "windows": {
+      "useWSL": false  
+    },
+  }, {
+    "name": "Launch Awesome Demo",
+    "type": "node",
+    "request": "launch",
+    "restart": false,
+    "stopOnEntry": false,
+    "args": ["lib/awesome.js"],
+    "cwd": "${workspaceRoot}",
+    "console": "integratedTerminal",
+    "sourceMaps": true,
+    "outFiles": ["${workspaceRoot}/build/**/*.js"],
+    "protocol": "inspector",
+    "windows": {
+      "useWSL": false  
+    },
+  }]
+}
