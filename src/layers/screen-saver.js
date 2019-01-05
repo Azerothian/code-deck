@@ -1,4 +1,4 @@
-import { Layer } from "../utils/renderer";
+import Layer from "../layer";
 import { getColours, rgbToHex } from "../utils/gradient";
 import { WIDTH, HEIGHT } from "../utils/deck";
 const g = [
@@ -46,8 +46,27 @@ export default class ScreenSaver extends Layer {
     for (var i = 0; i < this.particlesNum; i++) {
       this.particles.push(new Factory(this.colors));
     }
-
+    this.opacitySpeed = 0.1;
+    this.opacityDir = true; //true = increment
   }
+  update(delta) {
+    const diff = 1 / (delta * this.opacitySpeed);
+    let o = this.opacity;
+    if (this.opacityDir) {
+      o += diff;
+    } else {
+      o -= diff;
+    }
+    if (o > 1) {
+      this.opacityDir = false;
+      o = 1;
+    } else if (o < 0) {
+      this.opacityDir = true;
+      o = 0;
+    }
+    this.opacity = o;
+  }
+
   render() {
     this.ctx.clearRect(0, 0, WIDTH, HEIGHT);
     this.ctx.globalCompositeOperation = "lighter";

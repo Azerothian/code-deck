@@ -1,5 +1,5 @@
 // const StreamDeck = require("elgato-stream-deck");
-import Deck from "./utils/deck";
+import Deck from "../utils/deck";
 const {
   createCanvas
 } = require("canvas");
@@ -36,7 +36,7 @@ const g = [
     },
   },
 ];
-import {getColours, rgbToHex} from "./utils/gradient";
+import {getColours, rgbToHex} from "../utils/gradient";
 
 const streamDeck = new Deck();
 
@@ -174,3 +174,4 @@ function requestAnimFrame(callback) {
 //   streamDeck._writePage1(keyIndex, Buffer.from(firstPagePixels)); //eslint-disable-line
 //   streamDeck._writePage2(keyIndex, Buffer.from(secondPagePixels)); //eslint-disable-line
 // }
+

@@ -37,6 +37,7 @@
     "elgato-stream-deck": "^2.1.1",
     "fast-crc32": "^1.0.1",
     "gif-frames": "^1.0.1",
+    "moment": "^2.23.0",
     "node-hid": "file:.yalc/node-hid"
   }
 }

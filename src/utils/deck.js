@@ -14,7 +14,7 @@ export default class Deck extends StreamDeck {
   constructor() {
     super();
     this.crc = new Array(3 * 5);
-    this.enableCRC = true;
+    this.enableCRC = false;
   }
   fillImageRGBA(keyIndex, imageBuffer) {
     StreamDeck.checkValidKeyIndex(keyIndex);
