@@ -59,6 +59,13 @@ export default class Colours extends Layer {
       this.i = 0;
     }
   }
+  getColour(i) {
+    if(i > this.colours.length - 1 || i < 0) {
+      console.log("invalid colour", i);
+      return this.colours[0];
+    }
+    return this.colours[i];
+  }
   render() {
     var grd = this.ctx.createLinearGradient(0, 0, WIDTH, HEIGHT);
     let index = this.i;
@@ -66,13 +73,13 @@ export default class Colours extends Layer {
     let itvlIdx = 0;
     if (this.reverse) {
       for (let i = index; i > (index - this.colourDisplay); i--) {
-        grd.addColorStop(intervals * itvlIdx, rgbToHex(this.colours[i]));
+        grd.addColorStop(intervals * itvlIdx, rgbToHex(this.getColour(i)));
         itvlIdx++;
       }
     } else {
 
       for (let i = index; i < (index + this.colourDisplay); i++) {
-        grd.addColorStop(intervals * itvlIdx, rgbToHex(this.colours[i]));
+        grd.addColorStop(intervals * itvlIdx, rgbToHex(this.getColour(i)));
         itvlIdx++;
       }
     }
