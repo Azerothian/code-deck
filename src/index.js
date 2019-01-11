@@ -1,16 +1,72 @@
 import "source-map-support/register";
+
+import {loadImage} from "canvas";
+import path from "path";
+// registerFont(path.resolve(process.cwd(), "./fa-light-300.ttf"), {
+//   family: "FontAwesomeLight"
+// });
+
 import Deck from "./utils/deck";
 // import Renderer from "./renderer";
 
 import createScreenSaver from "./layers/screen-saver";
 import MatrixBackground from "./layers/matrix";
-import {Engine, LayerGroup} from "./engine";
+import {Engine, LayerGroup, Layer} from "./engine";
 
 const deck = new Deck();
 
+class LockButtons extends Layer {
+  async initialise() {
+    this.buttons = [
+      [{ image: await loadImage(path.resolve(process.cwd(), "./images/icons/lock-alt.svg"))}, "", "let", "yes", "cha"],
+      ["", "", "you", "me", "hai"],
+      ["", "", "lol", "no", "in"],
+    ];
+  }
+  render() {
+    for (let x = 0; x < 5; x++) {
+      for (let y = 0; y < 3; y++) {
+        this.ctx.font = "300 18px Noto Sans";
+        let xpos = (x * 72);
+        let ypos = (y * 72);
+        const button = this.buttons[y][x];
+        if (button.image) {
+          xpos += 9;
+          ypos += 9;
+
+          this.ctx.drawImage(button.image, xpos, ypos, 54, 54);
+        } else {
+          let text;
+          xpos += 36;
+          ypos += 36;
+          if (typeof button === "string") {
+            text = button;
+          } else if(button.text) {
+            if (button.font) {
+              this.ctx.font = button.font;
+            }
+            text = button.text;
+          }
+          // const m = this.ctx.measureText(text);
+
+          this.ctx.textAlign = "center";
+          this.ctx.textBaseline = "middle";
+          this.ctx.fillStyle = "white";
+          this.ctx.fillText(text, xpos, ypos);
+        }
+      }
+    }
+
+  }
+}
+
 class LockScreen extends LayerGroup {
   constructor() {
-    super([new MatrixBackground()]);
+    const matrix = new MatrixBackground();
+    const lockButtons = new LockButtons();
+    lockButtons.opacity = 0.8;
+    matrix.opacity = 0.3;
+    super([matrix, lockButtons]);
   }
 }
 
@@ -32,18 +88,36 @@ class Screen extends LayerGroup {
     this.lockScreen = lockScreen;
     this.state = states.SCREENSAVER;
   }
+  fadeLayer(fromLayer, toLayer, targetOpacity, inc = 0.05) {
+    if (!this.transitioning) {
+      fromLayer.opacity = 1;
+      toLayer.opacity = 0;
+    }
+    this.transitioning = true;
+    toLayer.enabled = true;
+    toLayer.opacity += inc;
+    fromLayer.opacity -= inc;
+    if (fromLayer.opacity < 0) {
+      fromLayer.opacity = 0;
+      fromLayer.enabled = false;
+    }
+    if (toLayer.opacity > targetOpacity) {
+      toLayer.opacity = targetOpacity;
+      this.transitioning = false;
+    } else {
+      setTimeout(() => this.fadeLayer(fromLayer, toLayer, targetOpacity, inc));
+    }
+  }
   onKeyDown(keyIndex) {
-    if(this.transitioning) {
+    if (this.transitioning) {
       return;
     }
     if (this.state === states.SCREENSAVER) {
       this.state = states.LOCKSCREEN;
-      this.screenSaver.enabled = false;
-      this.lockScreen.enabled = true;
+      this.fadeLayer(this.screenSaver, this.lockScreen, 1);
     } else if (this.state === states.LOCKSCREEN) {
       this.state = states.SCREENSAVER;
-      this.screenSaver.enabled = true;
-      this.lockScreen.enabled = false;
+      this.fadeLayer(this.lockScreen, this.screenSaver, 1);
     }
     super.onKeyDown(keyIndex);
   }

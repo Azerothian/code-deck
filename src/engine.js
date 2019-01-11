@@ -5,6 +5,19 @@ import waterfall from "./utils/waterfall";
 import moment from "moment";
 import {createCanvas} from "canvas";
 
+
+export class Fade {
+  constructor(from, to) {
+    this.from = from;
+    this.to = to;
+  }
+  render(ctx, layer, delta) {
+    ctx.globalAlpha = layer.opacity;
+    ctx.drawImage(layer.canvas, 0, 0);
+  }
+}
+
+
 export class Layer {
   constructor(options = {}) {
     const {canvas = {width: WIDTH, height: HEIGHT}, ctx} = options;
@@ -13,6 +26,7 @@ export class Layer {
     this.enabled = true;
     this.opacity = 1;
     this.lastUpdate = moment();
+    this.lastRender = moment();
     this.id = uuid();
   }
   async beginUpdate() {
@@ -25,7 +39,9 @@ export class Layer {
   async beginRender() {
     // this.ctx.globalAlpha = this.opacity;
     if (this.enabled) {
-      return this.render();
+      const delta = moment().diff(this.lastRender, "milliseconds");
+      this.lastRender = moment();
+      return this.render(delta);
     }
     return undefined;
   }
@@ -37,6 +53,7 @@ export class LayerGroup extends Layer {
     super(layerOptions);
     this.layers = layers;
     this.enabled = true;
+    this.filters = [];
   }
 
   onKeyDown(keyIndex) {
@@ -72,16 +89,21 @@ export class LayerGroup extends Layer {
       return undefined;
     }));
   }
-  async render() {
+  async render(delta) {
     const layers = this.layers.filter((f) => f.enabled);
     if (layers.length > 0) {
       this.ctx.clearRect(0, 0, WIDTH, HEIGHT);
       this.renderToScreen = true;
       this.clear = false;
       await Promise.all(layers.map((l) => l.beginRender()));
-      await waterfall(layers, async(layer) => {
-        this.ctx.globalAlpha = layer.opacity;
-        this.ctx.drawImage(layer.canvas, 0, 0);
+      await waterfall(layers, async(layer, prev, index) => {
+        const filters = this.filters.filter((lf) => (lf.to === index && lf.enabled));
+        if (filters.length > 0) {
+          filters[0].render(this.ctx, layer, delta);
+        } else {
+          this.ctx.globalAlpha = layer.opacity;
+          this.ctx.drawImage(layer.canvas, 0, 0);
+        }
       });
     } else {
       this.renderToScreen = false;
