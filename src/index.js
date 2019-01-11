@@ -47,6 +47,9 @@ class Screen extends LayerGroup {
     }
     super.onKeyDown(keyIndex);
   }
+  enable() {
+    this.enabled = true;
+  }
 }
 
 

@@ -2,7 +2,7 @@
   "version": "v1",
   "packages": {
     "node-hid": {
-      "signature": "2d80ed29dc511cb8b7696222bf387d34",
+      "signature": "c571f2b587ee7841e653cf9ce605bf2a",
       "file": true
     }
   }

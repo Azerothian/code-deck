@@ -1,7 +1,6 @@
 import {WIDTH, HEIGHT} from "./utils/deck";
 import {createCanvas} from "canvas";
 import waterfall from "./utils/waterfall";
-import { timingSafeEqual } from "crypto";
 
 const FPS = 60;
 
@@ -10,6 +9,7 @@ const FPS = 60;
 export default class Renderer extends Array {
 
   async start(deck) {
+    this.disabled = false;
     this.fps = 60;
     this.deck = deck;
     this.canvas = createCanvas(WIDTH, HEIGHT);
@@ -21,35 +21,54 @@ export default class Renderer extends Array {
   }
   async beginUpdateCycle() {
     await Promise.all(this.map(async(layer) => {
-      return layer.beginUpdate();
+      if (Array.isArray(layer)) {
+        return waterfall(layer, (l) => (this.updateLayer(l)));
+      }
+      return this.updateLayer(layer);
     }));
     return setTimeout(() => this.beginUpdateCycle(), 100);
   }
+  updateLayer(layer) {
+    return layer.beginUpdate();
+  }
 
   async beginRenderCycle() {
-    const layers = this.filter((f) => f.enabled && f.opacity > 0);
+    const layers = this.filter((f) => f.enabled);
     if (layers.length > 0) {
       this.ctx.clearRect(0, 0, WIDTH, HEIGHT);
       this.renderToScreen = true;
       this.clear = false;
-      await Promise.all(layers.map((l) => l.beginRender()));
+      await Promise.all(layers.map((layer) => {
+        if (Array.isArray(layer)) {
+          return Promise.all(layer.map((l) => l.beginRender()));
+        }
+        return layer.beginRender();
+      }));
       await waterfall(layers, async(layer) => {
-        this.ctx.globalAlpha = layer.opacity;
-        this.ctx.drawImage(layer.canvas, 0, 0);
+        if (Array.isArray(layer)) {
+          return waterfall(layer, (l) => this.renderLayer(l));
+        }
+        return this.renderLayer(layer);
       });
     } else {
       this.renderToScreen = false;
     }
     return setTimeout(() => this.beginRenderCycle(), 1000 / this.fps);
   }
+  renderLayer(layer) {
+    this.ctx.globalAlpha = layer.opacity;
+    this.ctx.drawImage(layer.canvas, 0, 0);
+  }
   async renderCanvas() {
-    if (!this.renderToScreen && !this.clear) {
-      this.ctx.clearRect(0, 0, WIDTH, HEIGHT);
-      this.deck.renderCanvasCtx(this.ctx);
-      this.clear = true;
-    }
-    if (this.renderToScreen) {
-      this.deck.renderCanvasCtx(this.ctx);
+    if (!this.disabled) {
+      if (!this.renderToScreen && !this.clear) {
+        this.ctx.clearRect(0, 0, WIDTH, HEIGHT);
+        this.deck.renderCanvasCtx(this.ctx);
+        this.clear = true;
+      }
+      if (this.renderToScreen) {
+        this.deck.renderCanvasCtx(this.ctx);
+      }
     }
     return setTimeout(() => this.renderCanvas(), 1000 / this.fps);
   }

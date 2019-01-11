@@ -21,4 +21,10 @@ export default class Layer {
     // this.ctx.globalAlpha = this.opacity;
     return this.render();
   }
+  enable() {
+    this.enabled = true;
+  }
+  disable() {
+    this.enabled = false;
+  }
 }
