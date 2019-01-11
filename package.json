@@ -38,6 +38,7 @@
     "fast-crc32": "^1.0.1",
     "gif-frames": "^1.0.1",
     "moment": "^2.23.0",
-    "node-hid": "file:.yalc/node-hid"
+    "node-hid": "file:.yalc/node-hid",
+    "source-map-support": "^0.5.9"
   }
 }

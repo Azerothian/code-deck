@@ -1,4 +1,4 @@
-import Layer from "../layer";
+import {Layer, LayerGroup} from "../engine";
 import { getColours, rgbToHex } from "../utils/gradient";
 import { WIDTH, HEIGHT } from "../utils/deck";
 const g = [
@@ -37,7 +37,7 @@ function Factory(colours) {
   this.vy = Math.round(Math.random() * 3) - 1.5;
 }
 
-export default class ScreenSaver extends Layer {
+class ScreenSaverLayer extends Layer {
   constructor() {
     super();
     this.particles = [];
@@ -118,3 +118,16 @@ export default class ScreenSaver extends Layer {
 function findDistance(p1, p2) {
   return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
 }
+
+
+export default () => {
+  const screenSaverArr = [];
+  for (let i = 1; i < 4; i++) {
+    const s = new ScreenSaverLayer();
+    s.opacitySpeed = i / 10;
+    s.opacity = i / 10;
+    s.opacityDir = i === 2;
+    screenSaverArr.push(s);
+  }
+  return new LayerGroup(screenSaverArr);
+};

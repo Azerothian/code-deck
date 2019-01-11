@@ -1,4 +1,4 @@
-import Layer from "../layer";
+import {Layer} from "../engine";
 import {ICON_SIZE, WIDTH, HEIGHT } from "../utils/deck";
 import {loadImage} from "canvas";
 import path from "path";
@@ -10,7 +10,7 @@ export default class IconSheet extends Layer {
 
     this.icons = icons;
   }
-  async start() {
+  async initialise() {
     this.iconData = await Promise.all(this.icons.map(async(i) => {
       return Object.assign({}, {
         image: await loadImage(path.resolve(process.cwd(), i.path)),
