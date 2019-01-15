@@ -29,6 +29,12 @@ export class Layer {
     this.lastRender = moment();
     this.id = uuid();
   }
+  async enable() {
+    this.enabled = true;
+  }
+  async disable() {
+    this.enabled = false;
+  }
   async beginUpdate() {
     if (this.update && this.enabled) {
       const delta = moment().diff(this.lastUpdate, "milliseconds");
@@ -136,7 +142,7 @@ export class Engine extends LayerGroup {
   }
   async beginUpdateCycle() {
     await this.beginUpdate();
-    return setTimeout(() => this.beginUpdateCycle(), 100);
+    return setTimeout(() => this.beginUpdateCycle(), 1000 / this.fps);
   }
   async beginRenderCycle() {
     await this.beginRender();
