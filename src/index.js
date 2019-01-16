@@ -1,5 +1,5 @@
 import "source-map-support/register";
-
+import "dotenv/config";
 import {loadImage} from "canvas";
 import path from "path";
 // registerFont(path.resolve(process.cwd(), "./fa-light-300.ttf"), {
@@ -16,6 +16,9 @@ import {Engine, LayerGroup, Layer} from "./engine";
 import {EventEmitter} from "events";
 import Hypnos from "./layers/hypnos";
 import ButtonRenderer from "./layers/buttons";
+
+import {spawn} from "child_process";
+
 const keyPhrase = ["let", "me", "in"];
 
 
@@ -40,7 +43,7 @@ class LockButtons extends ButtonRenderer {
     this.input = ["", "", ""];
     this.codes = ["let", "yes", "cha", "you", "me", "hai", "lol", "no", "in"];
 
-    shuffleArray(this.codes);
+    // shuffleArray(this.codes);
     this.inputPos = 0;
     return this.createButtonSet();
   }
@@ -135,6 +138,16 @@ class LockScreen extends LayerGroup {
   }
 }
 
+/*
+if [ "$(pidof spotify)" ]; then
+    # status can be: Playing, Paused or Stopped
+    status=`dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.freedesktop.DBus.Properties.Get string:'org.mpris.MediaPlayer2.Player' string:'PlaybackStatus'|egrep -A 1 "string"|cut -b 26-|cut -d '"' -f 1|egrep -v ^$`
+    artist=`dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.freedesktop.DBus.Properties.Get string:'org.mpris.MediaPlayer2.Player' string:'Metadata'|egrep -A 2 "artist"|egrep -v "artist"|egrep -v "array"|cut -b 27-|cut -d '"' -f 1|egrep -v ^$`
+    album=`dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.freedesktop.DBus.Properties.Get string:'org.mpris.MediaPlayer2.Player' string:'Metadata'|egrep -A 1 "album"|egrep -v "album"|cut -b 44-|cut -d '"' -f 1|egrep -v ^$`
+    title=`dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.freedesktop.DBus.Properties.Get string:'org.mpris.MediaPlayer2.Player' string:'Metadata'|egrep -A 1 "title"|egrep -v "title"|cut -b 44-|cut -d '"' -f 1|egrep -v ^$`
+fi
+*/
+
 
 class HomeButtons extends ButtonRenderer {
   async initialise() {
@@ -148,20 +161,45 @@ class HomeButtons extends ButtonRenderer {
     const imageListAlt = await loadImage(path.resolve(process.cwd(), "./images/icons/dark/list-alt.svg"));
     const imageWindowClose = await loadImage(path.resolve(process.cwd(), "./images/icons/dark/window-close.svg"));
     const imageVostro = await loadImage(path.resolve(process.cwd(), "./images/icons/vostro.png"));
+    const imagePlay = await loadImage(path.resolve(process.cwd(), "./images/icons/dark/play.svg"));
+    const imageStepBackward = await loadImage(path.resolve(process.cwd(), "./images/icons/dark/step-backward.svg"));
+    const imageStepForward = await loadImage(path.resolve(process.cwd(), "./images/icons/dark/step-forward.svg"));
 
 
     this.buttons = [
       [{ image: imageHeadphones }, { image: imageCode }, { image: imageGamepad }, { image: imageKey }, { image: imageListAlt }],
       [{ image: imageHDD }, undefined, { image: imageVostro }, undefined, { image: imageAddressCard }],
-      [{ image: imageWindowClose }, undefined, undefined, undefined, { image: imageFrown }],
+      [{ image: imageWindowClose }, {image: imageStepBackward}, {image: imagePlay}, {image: imageStepForward}, { image: imageFrown }],
     ];
   }
   onKeyDown(keyIndex) {
     let code, valid = true;
     switch (keyIndex) {
       case 14:
-        events.emit("reset");
+        return events.emit("reset");
+      case 4:
+        return spawn("spotify", [], {detached: true});
+      case 3:
+        return spawn("code", [], {detached: true});
+      case 2:
+        return spawn("steam", [], {detached: true});
+      case 1:
+        return spawn("xdg-open", [process.env.EL_WEB_VAULT], {detached: true});
+      case 0:
+        return spawn("xdg-open", [process.env.EL_WEB_TASKS], {detached: true});
+      case 9:
+        return spawn("xdg-open", [process.env.EL_HOMEDIR], {detached: true});
+      case 5:
+        return spawn("xdg-open", [process.env.EL_WEB_MAIL], {detached: true})
+      case 11: //next
+        return spawn("dbus-send", ["--print-reply", "--dest=org.mpris.MediaPlayer2.spotify", "/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player.Next"], {detached: true});
+      case 13: //prev
+        return spawn("dbus-send", ["--print-reply", "--dest=org.mpris.MediaPlayer2.spotify", "/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player.Previous"], {detached: true});
+      case 12: //play/pause
+        return spawn("dbus-send", ["--print-reply", "--dest=org.mpris.MediaPlayer2.spotify", "/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player.PlayPause"], {detached: true});
+
     }
+    return undefined;
   }
 }
 
@@ -200,19 +238,16 @@ class Screen extends LayerGroup {
     events.on("reset", () => this.reset());
   }
   reset() {
-
-    if (this.idleTimeout) {
-      clearTimeout(this.idleTimeout);
-    }
+    console.log("reset");
+    clearTimeout(this.idleTimeout);
     this.state = states.SCREENSAVER;
-    const activeLayer = this.layers.filter((l) => l.enabled)[0];
-    this.fadeLayer(activeLayer, this.screenSaver, 1);
+    // const activeLayer = this.layers.filter((l) => l.enabled)[0];
+    this.fadeLayer(this.getActiveLayer(), this.screenSaver, 1);
 
   }
   loginSuccess() {
-    if (this.idleTimeout) {
-      clearTimeout(this.idleTimeout);
-    }
+    console.log("loginSuccess");
+    clearTimeout(this.idleTimeout);
     this.state = states.HOMESCREEN;
     this.fadeLayer(this.lockScreen, this.homeScreen, 1);
   }
@@ -237,22 +272,25 @@ class Screen extends LayerGroup {
     }
   }
   lock() {
+    console.log("lock");
     if (this.transitioning) {
       return;
     }
     this.state = states.SCREENSAVER;
-    this.fadeLayer(this.lockScreen, this.screenSaver, 1);
+    this.fadeLayer(this.getActiveLayer(), this.screenSaver, 1);
+  }
+  getActiveLayer() {
+    return this.layers.filter((l) => l.enabled)[0];
   }
   idleCheck() {
+    clearTimeout(this.idleTimeout);
     return setTimeout(() => {
+      console.log("clear-lock");
       events.emit("clear-lock");
       return this.lock();
     }, 20000);
   }
   onKeyDown(keyIndex) {
-    if (this.idleTimeout) {
-      clearTimeout(this.idleTimeout);
-    }
     this.idleTimeout = this.idleCheck();
     if (this.transitioning) {
       return;
@@ -262,7 +300,12 @@ class Screen extends LayerGroup {
       this.fadeLayer(this.screenSaver, this.lockScreen, 1);
     } else {
 
-      super.onKeyDown(keyIndex);
+      this.layers.forEach((l) => {
+        if (l.enabled && l.onKeyDown && !this.transitioning) {
+          return l.onKeyDown(keyIndex);
+        }
+        return undefined;
+      });
     }
     // else if (this.state === states.LOCKSCREEN) {
     //   this.state = states.SCREENSAVER;
