@@ -1,9 +1,0 @@
-{
-  "version": "v1",
-  "packages": {
-    "node-hid": {
-      "signature": "c571f2b587ee7841e653cf9ce605bf2a",
-      "file": true
-    }
-  }
-}

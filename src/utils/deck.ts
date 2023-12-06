@@ -1,4 +1,4 @@
-import StreamDeck from "elgato-stream-deck";
+import {StreamDeck} from "@elgato-stream-deck/node";
 import crc32 from "fast-crc32";
 
 export const ICON_SIZE = 72;
@@ -10,14 +10,17 @@ export const WIDTH = 72 * 5;
 export const HEIGHT = 72 * 3;
 
 
-export default class Deck extends StreamDeck {
+export default class Deck  {
+  hw?: StreamDeck
+  crc: number[]
+  enableCRC: boolean
+  
   constructor() {
-    super();
     this.crc = new Array(3 * 5);
     this.enableCRC = false;
   }
   fillImageRGBA(keyIndex, imageBuffer) {
-    StreamDeck.checkValidKeyIndex(keyIndex);
+    hw.checkValidKeyIndex(keyIndex);
     if (imageBuffer.length !== 20736) {
       throw new RangeError(`Expected image buffer of length 20736, got length ${imageBuffer.length}`);
     }

@@ -1,45 +1,27 @@
 {
-  "name": "coder-deck",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "name": "code-deck",
+  "module": "index.ts",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "tsx ./src/index.ts"
   },
-  "author": "",
-  "license": "ISC",
   "resolutions": {
-    "node-hid": "file:.yalc/node-hid"
+    "sse4_crc32": "7.0.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.2.0",
-    "@babel/plugin-proposal-class-properties": "^7.2.1",
-    "@babel/plugin-proposal-object-rest-spread": "^7.2.0",
-    "@babel/preset-env": "^7.2.0",
-    "@babel/runtime": "^7.2.0",
-    "babel-core": "^7.0.0-bridge.0",
-    "babel-eslint": "^10.0.1",
-    "babel-jest": "^23.6.0",
-    "babel-plugin-autobind-class-methods": "^5.0.1",
-    "del": "^3.0.0",
-    "eslint": "^5.10.0",
-    "eslint-plugin-jest": "^22.1.2",
-    "gulp": "^4.0.0",
-    "gulp-babel": "^8.0.0",
-    "gulp-eslint": "^5.0.0",
-    "gulp-jsdoc3": "^2.0.0",
-    "gulp-sourcemaps": "^2.6.4",
-    "jest": "^23.6.0",
-    "regenerator-runtime": "^0.13.1"
+    "@types/node": "20"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
   },
   "dependencies": {
-    "canvas": "^2.2.0",
-    "dotenv": "^6.2.0",
-    "elgato-stream-deck": "^2.1.1",
+    "@elgato-stream-deck/node": "^6.0.0",
+    "canvas": "^2.11.2",
+    "dotenv": "^16.3.1",
     "fast-crc32": "^1.0.1",
     "gif-frames": "^1.0.1",
-    "moment": "^2.23.0",
-    "node-hid": "file:.yalc/node-hid",
-    "source-map-support": "^0.5.9"
+    "moment": "^2.29.4",
+    "tsx": "^4.6.2",
+    "uuid": "^9.0.1"
   }
 }
