@@ -36,14 +36,10 @@
     "request": "launch",
     "restart": false,
     "stopOnEntry": false,
-    "args": ["lib/index.js"],
+    "args": ["src/index.ts"],
+    "runtimeExecutable": "tsx",
     "cwd": "${workspaceRoot}",
     "console": "integratedTerminal",
-    "sourceMaps": true,
-    "outFiles": ["${workspaceRoot}/build/**/*.js"],
     "protocol": "inspector",
-    "windows": {
-      "useWSL": false  
-    },
   }]
 }

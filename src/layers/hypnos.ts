@@ -8,7 +8,8 @@ import { Layer } from "../engine";
 
 
 export default class Hypnos extends Layer {
-  initialise() {
+  hypnos: any;
+  initialise = async() => {
     let width = HEIGHT * 0.9,
       height = HEIGHT * 0.9,
       quality = 180,
@@ -33,12 +34,12 @@ export default class Hypnos extends Layer {
       });
     }
   }
-  update(delta) {
+  update = async(delta: number) =>  {
     for (var i = 0, len = this.hypnos.layers.length; i < len; i++) {
       this.hypnos.layers[i].r += (delta / 1000);
     }
   }
-  render() {
+  render = async() => {
     this.ctx.save();
     this.ctx.clearRect(0, 0, WIDTH, HEIGHT);
     this.ctx.fillStyle = "#ffffff";
@@ -81,7 +82,7 @@ export default class Hypnos extends Layer {
   }
 
   // Pains one layer
-  paintLayer(layer, mask) {
+  paintLayer(layer: any, mask: boolean = false) {
     let xOffset = (WIDTH - this.hypnos.width) / 2;
     let yOffset = (HEIGHT - this.hypnos.height) / 2;
     let size = this.hypnos.layerSize + (mask ? 10 : 0);

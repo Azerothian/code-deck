@@ -1,4 +1,4 @@
-import Layer from "../layer";
+import {Layer} from "../engine";
 import {getColours, rgbToHex} from "../utils/gradient";
 
 import { WIDTH, HEIGHT } from "../utils/deck";
@@ -34,6 +34,12 @@ const g = [
 
 
 export default class Colours extends Layer {
+  reverse: boolean;
+  i: number;
+  colourCount: number;
+  colourDisplay: number;
+  colours: any[];
+
   constructor() {
     super();
     this.reverse = false;
@@ -42,7 +48,7 @@ export default class Colours extends Layer {
     this.colourDisplay = 3;
     this.colours = getColours(g, this.colourCount);
   }
-  update(delta) {
+  update = async(delta: number) => {
     const inc = Math.round(delta * 0.001);
     if (this.reverse) {
       this.i -= inc;
@@ -59,14 +65,14 @@ export default class Colours extends Layer {
       this.i = 0;
     }
   }
-  getColour(i) {
+  getColour = (i: number) => {
     if(i > this.colours.length - 1 || i < 0) {
       console.log("invalid colour", i);
       return this.colours[0];
     }
     return this.colours[i];
   }
-  render() {
+  render = async() => {
     var grd = this.ctx.createLinearGradient(0, 0, WIDTH, HEIGHT);
     let index = this.i;
     let intervals = 1 / this.colourDisplay;

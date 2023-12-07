@@ -1,5 +1,5 @@
 
-export function getColours(gradient, count) {
+export function getColours(gradient: { position: number; colour: { r: number; g: number; b: number; }; }[], count: number) {
   let colours = [];
   if (count === 2) {
     return [
@@ -14,7 +14,7 @@ export function getColours(gradient, count) {
   return colours;
 }
 
-function pickColourFromGradient(gradient, position) {
+function pickColourFromGradient(gradient: string | any[], position: number) {
   let high, low;
   for (let i = 1; i <= gradient.length; i++) {
     if (position <= gradient[i].position) {
@@ -30,7 +30,7 @@ function pickColourFromGradient(gradient, position) {
   return pickColourBetween(high.colour, low.colour, ratio);
 }
 
-function pickColourBetween(color1, color2, weight) {
+function pickColourBetween(color1: { r: number; g: number; b: number; }, color2: { r: number; g: number; b: number; }, weight: number) {
   const p = weight;
   const w = p * 2 - 1;
   const w1 = (w / 1 + 1) / 2;
@@ -42,7 +42,7 @@ function pickColourBetween(color1, color2, weight) {
   };
 }
 
-export function rgbToHex(rgb) {
+export function rgbToHex(rgb: { r?: any; g?: any; b?: any; a?: any; }) {
   const {r, g, b} = rgb;
   return `#${r.toString(16)}${g.toString(16)}${b.toString(16)}${((rgb.a >= 0 ? rgb.a : 1) * 255).toString(16)}`.substring(0, 7);
 }

@@ -2,14 +2,13 @@ import {Layer} from "../engine";
 
 import { WIDTH, HEIGHT } from "../utils/deck";
 
-var chinese = "田由甲申甴电甶男甸甹町画甼甽甾甿畀畁畂畃畄畅畆畇畈畉畊畋界畍畎畏畐畑";
+var chinese = "田由甲申甴电甶男甸甹町画甼甽甾甿畀畁畂畃畄畅畆畇畈畉畊畋界畍畎畏畐畑".split("");
 //converting the string into an array of single characters
-chinese = chinese.split("");
 
 var fontSize = 10;
 var columns = WIDTH / fontSize; //number of columns for the rain
 //an array of drops - one per column
-var drops = [];
+var drops: any = [];
 //x below is the x coordinate
 //1 = y co-ordinate of the drop(same for every drop initially)
 for (var x = 0; x < columns; x++) {
@@ -17,13 +16,13 @@ for (var x = 0; x < columns; x++) {
 }
 
 export default class Matrix extends Layer {
-  disable() {
-    super.disable();
+  disable = async() => {
+    await super.disable();
     for (var x = 0; x < columns; x++) {
       drops[x] = 1;
     }
   }
-  update() {
+  update = async() => {
     if (this.enabled) {
       for (var i = 0; i < drops.length; i++) {
         //sending the drop back to the top randomly after it has crossed the screen
@@ -36,7 +35,7 @@ export default class Matrix extends Layer {
       }
     }
   }
-  render() {
+  render = async() => {
     const ctx = this.ctx;
     ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
     ctx.fillRect(0, 0, WIDTH, HEIGHT);
@@ -49,8 +48,5 @@ export default class Matrix extends Layer {
       //x = i*font_size, y = value of drops[i]*font_size
       ctx.fillText(text, i * fontSize, drops[i] * fontSize);
     }
-  }
-  onKeyDown(keyIndex) {
-
   }
 }

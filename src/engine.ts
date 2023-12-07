@@ -1,5 +1,5 @@
 import {EventEmitter} from "events";
-import {WIDTH, HEIGHT} from "./utils/deck";
+import Deck, {WIDTH, HEIGHT} from "./utils/deck";
 import {v4} from "uuid";
 import waterfall from "./utils/waterfall";
 import moment from "moment";
@@ -9,6 +9,7 @@ import {Canvas, CanvasRenderingContext2D, createCanvas} from "canvas";
 export class Fade {
   from: any;
   to: any;
+  enabled = true;
   
   constructor(from: any, to: any) {
     this.from = from;
@@ -44,7 +45,7 @@ export class Layer {
     this.opacity = 1;
     this.lastUpdate = moment();
     this.lastRender = moment();
-    this.id = uuid();
+    this.id = v4();
   }
   async enable() {
     this.enabled = true;
@@ -74,7 +75,7 @@ export class Layer {
 export class LayerGroup extends Layer {
   layers: Layer[];
   filters: Fade[];
-  constructor(layers = [], layerOptions = {}) {
+  constructor(layers: Layer[] = [], layerOptions: any = {}) {
     super(layerOptions);
     this.layers = layers;
     this.enabled = true;
@@ -114,7 +115,7 @@ export class LayerGroup extends Layer {
       return undefined;
     }));
   }
-  render = async(delta: number) {
+  render = async(delta: number) => {
     const layers = this.layers.filter((f) => f.enabled);
     if (layers.length > 0) {
       this.ctx.clearRect(0, 0, WIDTH, HEIGHT);
@@ -138,7 +139,9 @@ export class LayerGroup extends Layer {
 }
 
 export class Engine extends LayerGroup {
-  constructor(deck, layers = []) {
+  deck: Deck;
+  fps: number;
+  constructor(deck: Deck, layers: Layer[] = []) {
     super(layers, {
       canvas: {
         width: WIDTH,
@@ -147,27 +150,29 @@ export class Engine extends LayerGroup {
       ctx: {pixelFormat: "RGB24"},
     });
     this.deck = deck;
-    this.deck.on("down", (ki) => this.onKeyDown(ki));
-    this.deck.on("up", (ki) => this.onKeyUp(ki));
+
     this.fps = 60;
   }
 
 
   async start() {
+    const d = await this.deck.getStreamDeck();
+    d.on("down", (ki) => this.onKeyDown(ki));
+    d.on("up", (ki) => this.onKeyUp(ki));
     await this.initialise();
     this.beginUpdateCycle();
     this.beginRenderCycle();
     this.renderCanvas();
   }
-  async beginUpdateCycle() {
+  beginUpdateCycle = async() => {
     await this.beginUpdate();
-    return setTimeout(() => this.beginUpdateCycle(), 1000 / this.fps);
+    setTimeout(() => this.beginUpdateCycle(), 1000 / this.fps);
   }
-  async beginRenderCycle() {
+  beginRenderCycle = async() => {
     await this.beginRender();
-    return setTimeout(() => this.beginRenderCycle(), 1000 / this.fps);
+    setTimeout(() => this.beginRenderCycle(), 1000 / this.fps);
   }
-  async renderCanvas() {
+  renderCanvas = async() => {
     if (!this.renderToScreen && !this.clear) {
       this.ctx.clearRect(0, 0, WIDTH, HEIGHT);
       this.deck.renderCanvasCtx(this.ctx);
@@ -176,7 +181,7 @@ export class Engine extends LayerGroup {
     if (this.renderToScreen) {
       this.deck.renderCanvasCtx(this.ctx);
     }
-    return setTimeout(() => this.renderCanvas(), 1000 / this.fps);
+    setTimeout(() => this.renderCanvas(), 1000 / this.fps);
   }
 
 

@@ -5,19 +5,23 @@ import path from "path";
 
 
 export default class IconSheet extends Layer {
-  constructor(icons) {
+  icons: any[];
+  iconData: any[];
+
+  constructor(icons: any) {
     super();
 
     this.icons = icons;
+    this.iconData = [];
   }
-  async initialise() {
+  initialise = async() => {
     this.iconData = await Promise.all(this.icons.map(async(i) => {
       return Object.assign({}, {
         image: await loadImage(path.resolve(process.cwd(), i.path)),
       }, i);
     }));
   }
-  render() {
+  render = async() => {
     this.iconData.forEach((i) => {
       this.ctx.drawImage(i.image, i.x * ICON_SIZE, i.y * ICON_SIZE, ICON_SIZE, ICON_SIZE);
     });

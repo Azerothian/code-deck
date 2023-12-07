@@ -9,7 +9,8 @@
     "sse4_crc32": "7.0.0"
   },
   "devDependencies": {
-    "@types/node": "20"
+    "@types/node": "20",
+    "@types/uuid": "^9.0.7"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"

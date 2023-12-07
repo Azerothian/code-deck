@@ -1,4 +1,4 @@
-import "source-map-support/register";
+// import "source-map-support/register";
 import "dotenv/config";
 import {loadImage} from "canvas";
 import path from "path";
@@ -22,9 +22,17 @@ import {spawn} from "child_process";
 const keyPhrase = ["let", "me", "in"];
 
 
+const config = {
+  paths: {
+    vault: process.env.EL_WEB_VAULT || "",
+    tasks: process.env.EL_WEB_TASKS || "",
+    mail: process.env.EL_WEB_MAIL || "",
+    homedir: process.env.EL_HOMEDIR || "",
+  }
+}
 const events = new EventEmitter();
 const deck = new Deck();
-function shuffleArray(array) {
+function shuffleArray(array: any[]) {
   for (var i = array.length - 1; i > 0; i--) {
     var j = Math.floor(Math.random() * (i + 1));
     var temp = array[i];
@@ -35,7 +43,13 @@ function shuffleArray(array) {
 
 
 class LockButtons extends ButtonRenderer {
-  async initialise() {
+  lockIcon: any;
+  closeIcon: any;
+  codeBG: any;
+  input?: string[];
+  codes?: string[];
+  inputPos = 0;
+  initialise = async() => {
     events.on("clear-lock", () => this.clearLock());
     this.lockIcon = await loadImage(path.resolve(process.cwd(), "./images/icons/lock-alt.svg"));
     this.closeIcon = await loadImage(path.resolve(process.cwd(), "./images/icons/caret-circle-left.svg"));
@@ -48,7 +62,10 @@ class LockButtons extends ButtonRenderer {
     return this.createButtonSet();
   }
 
-  onKeyDown(keyIndex) {
+  onKeyDown = (keyIndex: any) => {
+    if(!this.input) {
+      return;
+    }
     let code, valid = true;
     switch (keyIndex) {
       case 2:
@@ -109,6 +126,9 @@ class LockButtons extends ButtonRenderer {
     return this.createButtonSet();
   }
   createButtonSet() {
+    if (!this.input || !this.codes) {
+      return;
+    }
     const codes = this.codes;
     let input = this.input.map((i) => {
       if (i !== "") {
@@ -150,7 +170,7 @@ fi
 
 
 class HomeButtons extends ButtonRenderer {
-  async initialise() {
+  initialise = async()=> {
     const imageAddressCard = await loadImage(path.resolve(process.cwd(), "./images/icons/dark/address-card.svg"));
     const imageCode = await loadImage(path.resolve(process.cwd(), "./images/icons/dark/code.svg"));
     const imageFrown = await loadImage(path.resolve(process.cwd(), "./images/icons/dark/frown.svg"));
@@ -172,7 +192,7 @@ class HomeButtons extends ButtonRenderer {
       [{ image: imageWindowClose }, {image: imageStepBackward}, {image: imagePlay}, {image: imageStepForward}, { image: imageFrown }],
     ];
   }
-  onKeyDown(keyIndex) {
+  onKeyDown = (keyIndex: number) => {
     let code, valid = true;
     switch (keyIndex) {
       case 14:
@@ -184,13 +204,13 @@ class HomeButtons extends ButtonRenderer {
       case 2:
         return spawn("steam", [], {detached: true});
       case 1:
-        return spawn("xdg-open", [process.env.EL_WEB_VAULT], {detached: true});
+        return spawn("xdg-open", [config.paths.vault], {detached: true});
       case 0:
-        return spawn("xdg-open", [process.env.EL_WEB_TASKS], {detached: true});
+        return spawn("xdg-open", [config.paths.tasks], {detached: true});
       case 9:
-        return spawn("xdg-open", [process.env.EL_HOMEDIR], {detached: true});
+        return spawn("xdg-open", [config.paths.homedir], {detached: true});
       case 5:
-        return spawn("xdg-open", [process.env.EL_WEB_MAIL], {detached: true})
+        return spawn("xdg-open", [config.paths.mail], {detached: true})
       case 11: //next
         return spawn("dbus-send", ["--print-reply", "--dest=org.mpris.MediaPlayer2.spotify", "/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player.Next"], {detached: true});
       case 13: //prev
@@ -218,6 +238,13 @@ const states = {
   HOMESCREEN: 2,
 };
 class Screen extends LayerGroup {
+  homeScreen: HomeScreen;
+  screenSaver: Layer;
+  lockScreen: Layer;
+  state: number;
+  idleTimeout: any;
+  transitioning = false;
+
   constructor() {
     const screenSaver = createScreenSaver();
     const lockScreen = new LockScreen();
@@ -251,7 +278,7 @@ class Screen extends LayerGroup {
     this.state = states.HOMESCREEN;
     this.fadeLayer(this.lockScreen, this.homeScreen, 1);
   }
-  async fadeLayer(fromLayer, toLayer, targetOpacity, inc = 0.1) {
+  async fadeLayer(fromLayer: Layer, toLayer: Layer, targetOpacity: number, inc = 0.1) {
     if (!this.transitioning) {
       fromLayer.opacity = 1;
       toLayer.opacity = 0;
@@ -290,7 +317,7 @@ class Screen extends LayerGroup {
       return this.lock();
     }, 20000);
   }
-  onKeyDown(keyIndex) {
+  onKeyDown = async(keyIndex: number) => {
     this.idleTimeout = this.idleCheck();
     if (this.transitioning) {
       return;
@@ -312,7 +339,7 @@ class Screen extends LayerGroup {
     //   this.fadeLayer(this.lockScreen, this.screenSaver, 1);
     // }
   }
-  enable() {
+  enable = async() => {
     this.enabled = true;
   }
 }

@@ -13,7 +13,7 @@ export default class ButtonRenderer extends Layer {
       }
     }
   }
-  render = () => {
+  render = async() => {
     this.ctx.clearRect(0, 0, WIDTH, HEIGHT);
     for (let x = 0; x < 5; x++) {
       for (let y = 0; y < 3; y++) {
