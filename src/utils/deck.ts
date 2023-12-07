@@ -59,6 +59,8 @@ export default class Deck  {
   //   this.hw._writePage1(keyIndex, Buffer.from(firstPagePixels)); //eslint-disable-line
   //   this.hw._writePage2(keyIndex, Buffer.from(secondPagePixels)); //eslint-disable-line
   // }
+
+  // https://stackoverflow.com/questions/68885669/canvas-rgba-to-rgb-conversion
   renderCanvasCtx(ctx: CanvasRenderingContext2D) {
     let i = 0;
     for (var y = 0; y < 3; y++) {
@@ -66,9 +68,18 @@ export default class Deck  {
         let xPos = x * 72;
         let yPos = y * 72;
         const imageData = ctx.getImageData(xPos, yPos, 72, 72);
-        const imageBuffer = Buffer.from(imageData.data.buffer).filter((el,i) => {
-          return i % 4 !== 4 - 1
-        });
+        const length = imageData.data.length;
+        const imageBuffer = new Uint8Array(length - length / 4);
+        let j = 0;
+        for (i = 0; i < length; i = i + 4) {
+          imageBuffer[j] = imageData.data[i]; // R
+          imageBuffer[j + 1] = imageData.data[i + 1]; // G
+          imageBuffer[j + 2] = imageData.data[i + 2]; // B
+          j = j + 3;
+        }
+        // const imageBuffer = Buffer.from(imageData.data.buffer).filter((el,i) => {
+        //   return i % 4 !== 4 - 1
+        // });
         let skip = false;
         if (this.enableCRC) {
           const crc = crc32.calculate(imageBuffer);
