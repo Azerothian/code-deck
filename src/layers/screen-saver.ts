@@ -1,4 +1,4 @@
-import {Layer, LayerGroup} from "../engine";
+import {Layer, LayerGroup, LayerOptions} from "../engine";
 import { getColours, rgbToHex } from "../utils/gradient";
 import { WIDTH, HEIGHT } from "../utils/deck";
 const g = [
@@ -27,19 +27,37 @@ const g = [
     },
   },
 ];
+type v2 = {
+  x: number;
+  y: number;
+}
 
-function Factory(colours) {
-  this.x = Math.round(Math.random() * WIDTH);
-  this.y = Math.round(Math.random() * HEIGHT);
-  this.rad = Math.round(Math.random() * 1) + 1;
-  this.rgba = colours[Math.round(Math.random() * 10)];
-  this.vx = Math.round(Math.random() * 3) - 1.5;
-  this.vy = Math.round(Math.random() * 3) - 1.5;
+class Factory {
+  x: number;
+  y: number;
+  rad: number;
+  rgba: string;
+  vx: number;
+  vy: number;
+
+  constructor(colours: any) {
+    this.x = Math.round(Math.random() * WIDTH);
+    this.y = Math.round(Math.random() * HEIGHT);
+    this.rad = Math.round(Math.random() * 1) + 1;
+    this.rgba = colours[Math.round(Math.random() * 10)];
+    this.vx = Math.round(Math.random() * 3) - 1.5;
+    this.vy = Math.round(Math.random() * 3) - 1.5;
+  }
 }
 
 class ScreenSaverLayer extends Layer {
-  constructor() {
-    super();
+  particles: Factory[];
+  particlesNum: number;
+  colors: string[];
+  opacitySpeed: number;
+  opacityDir: boolean;
+  constructor(options?: LayerOptions) {
+    super(options);
     this.particles = [];
     this.particlesNum = 20;
     this.colors = getColours(g, 11).map((c) => rgbToHex(c));
@@ -49,7 +67,7 @@ class ScreenSaverLayer extends Layer {
     this.opacitySpeed = 0.1;
     this.opacityDir = true; //true = increment
   }
-  update(delta) {
+  update = async(delta: number) => {
     const diff = 1 / (delta * this.opacitySpeed);
     let o = this.opacity;
     if (this.opacityDir) {
@@ -67,7 +85,7 @@ class ScreenSaverLayer extends Layer {
     this.opacity = o;
   }
 
-  render() {
+  render = async() => {
     this.ctx.clearRect(0, 0, WIDTH, HEIGHT);
     this.ctx.globalCompositeOperation = "lighter";
     for (var i = 0; i < this.particlesNum; i++) {
@@ -77,7 +95,7 @@ class ScreenSaverLayer extends Layer {
       for (var j = 0; j < this.particlesNum; j++) {
 
         var temp2 = this.particles[j];
-        this.ctx.linewidth = 0.5;
+        this.ctx.lineWidth = 0.5;
 
         if (temp.rgba === temp2.rgba && findDistance(temp, temp2) < 50) {
           this.ctx.strokeStyle = temp.rgba;
@@ -115,19 +133,19 @@ class ScreenSaverLayer extends Layer {
   }
 }
 
-function findDistance(p1, p2) {
+function findDistance(p1: v2, p2: v2) {
   return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
 }
 
 
-export default () => {
+export default (options?: LayerOptions) => {
   const screenSaverArr = [];
   for (let i = 1; i < 4; i++) {
-    const s = new ScreenSaverLayer();
+    const s = new ScreenSaverLayer(options);
     s.opacitySpeed = i / 10;
     s.opacity = i / 10;
     s.opacityDir = i === 2;
     screenSaverArr.push(s);
   }
-  return new LayerGroup(screenSaverArr);
+  return new LayerGroup(screenSaverArr, options);
 };

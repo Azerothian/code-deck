@@ -1,6 +1,7 @@
 import {StreamDeck, openStreamDeck, listStreamDecks} from "@elgato-stream-deck/node";
 import { CanvasRenderingContext2D } from "canvas";
 import crc32 from "fast-crc32";
+import { EventEmitter } from "events";
 
 export const ICON_SIZE = 72;
 export const NUM_FIRST_PAGE_PIXELS = 2583;
@@ -11,16 +12,21 @@ export const WIDTH = 72 * 5;
 export const HEIGHT = 72 * 3;
 
 
-export default class Deck  {
+export default class Deck extends EventEmitter  {
   hw?: StreamDeck
   crc: number[]
   enableCRC: boolean
+  loading = false;
   
   constructor() {
+    super();
     this.crc = new Array(3 * 5);
-    this.enableCRC = false;
+    this.enableCRC = true;
+    process.on("uncaughtException", async(err) => {
+      this.hw = undefined;
+    })
   }
-  getStreamDeck = async() => {
+  initialise = async() => {
     if(!this.hw) {
       const results = await listStreamDecks();
       if(results.length === 0) {
@@ -30,8 +36,19 @@ export default class Deck  {
       this.hw = await openStreamDeck(l.path, {
         resetToLogoOnClose: true,
       })
+      this.hw.on("down", this.onKeyDown);
+      this.hw.on("up", this.onKeyUp);
     }
-    return this.hw;
+  }
+  onKeyDown = (keyIndex: number) => {
+    this.emit("down", keyIndex);
+  }
+  onKeyUp = (keyIndex: number) => {
+    this.emit("up", keyIndex);
+  }
+  reset = async() => {
+    this.hw = undefined;
+    await this.initialise();
   }
   // fillImageRGBA = (keyIndex: number, imageBuffer: Buffer) => {
   //   if(!this.hw) {
@@ -62,6 +79,9 @@ export default class Deck  {
 
   // https://stackoverflow.com/questions/68885669/canvas-rgba-to-rgb-conversion
   renderCanvasCtx(ctx: CanvasRenderingContext2D) {
+    if(!this.hw) {
+      throw new Error("StreamDeck not initialized");
+    }
     let i = 0;
     for (var y = 0; y < 3; y++) {
       for (var x = 4; x >= 0; x--) {
@@ -71,7 +91,7 @@ export default class Deck  {
         const length = imageData.data.length;
         const imageBuffer = new Uint8Array(length - length / 4);
         let j = 0;
-        for (i = 0; i < length; i = i + 4) {
+        for (let i = 0; i < length; i = i + 4) {
           imageBuffer[j] = imageData.data[i]; // R
           imageBuffer[j + 1] = imageData.data[i + 1]; // G
           imageBuffer[j + 2] = imageData.data[i + 2]; // B

@@ -68,6 +68,8 @@ class LockButtons extends ButtonRenderer {
     }
     let code, valid = true;
     switch (keyIndex) {
+      case 3:
+        return spawn("xflock4", [], {detached: true});
       case 2:
         code = this.buttons[0][2];
         break;
@@ -173,14 +175,14 @@ class HomeButtons extends ButtonRenderer {
   initialise = async()=> {
     const imageAddressCard = await loadImage(path.resolve(process.cwd(), "./images/icons/dark/address-card.svg"));
     const imageCode = await loadImage(path.resolve(process.cwd(), "./images/icons/dark/code.svg"));
-    const imageFrown = await loadImage(path.resolve(process.cwd(), "./images/icons/dark/frown.svg"));
+    const imageFrown = await loadImage(path.resolve(process.cwd(), "./images/icons/dark/repeat.svg"));
     const imageGamepad = await loadImage(path.resolve(process.cwd(), "./images/icons/dark/gamepad.svg"));
     const imageHDD = await loadImage(path.resolve(process.cwd(), "./images/icons/dark/hdd.svg"));
     const imageHeadphones = await loadImage(path.resolve(process.cwd(), "./images/icons/dark/headphones.svg"));
     const imageKey = await loadImage(path.resolve(process.cwd(), "./images/icons/dark/key.svg"));
     const imageListAlt = await loadImage(path.resolve(process.cwd(), "./images/icons/dark/list-alt.svg"));
     const imageWindowClose = await loadImage(path.resolve(process.cwd(), "./images/icons/dark/window-close.svg"));
-    const imageVostro = await loadImage(path.resolve(process.cwd(), "./images/icons/vostro.png"));
+    const imageCenter = await loadImage(path.resolve(process.cwd(), "./images/icons/super.png"));
     const imagePlay = await loadImage(path.resolve(process.cwd(), "./images/icons/dark/play.svg"));
     const imageStepBackward = await loadImage(path.resolve(process.cwd(), "./images/icons/dark/step-backward.svg"));
     const imageStepForward = await loadImage(path.resolve(process.cwd(), "./images/icons/dark/step-forward.svg"));
@@ -188,7 +190,7 @@ class HomeButtons extends ButtonRenderer {
 
     this.buttons = [
       [{ image: imageHeadphones }, { image: imageCode }, { image: imageGamepad }, { image: imageKey }, { image: imageListAlt }],
-      [{ image: imageHDD }, undefined, { image: imageVostro }, undefined, { image: imageAddressCard }],
+      [{ image: imageHDD }, undefined, { image: imageCenter }, undefined, { image: imageAddressCard }],
       [{ image: imageWindowClose }, {image: imageStepBackward}, {image: imagePlay}, {image: imageStepForward}, { image: imageFrown }],
     ];
   }
@@ -197,6 +199,8 @@ class HomeButtons extends ButtonRenderer {
     switch (keyIndex) {
       case 14:
         return events.emit("reset");
+      case 7:
+        return spawn("xflock4", [], {detached: true});
       case 4:
         return spawn("spotify", [], {detached: true});
       case 3:
@@ -211,6 +215,8 @@ class HomeButtons extends ButtonRenderer {
         return spawn("xdg-open", [config.paths.homedir], {detached: true});
       case 5:
         return spawn("xdg-open", [config.paths.mail], {detached: true})
+      case 10:
+        return spawn("xdotool", ["key", "F5"], {detached: true})
       case 11: //next
         return spawn("dbus-send", ["--print-reply", "--dest=org.mpris.MediaPlayer2.spotify", "/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player.Next"], {detached: true});
       case 13: //prev
