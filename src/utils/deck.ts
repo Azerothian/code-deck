@@ -21,7 +21,7 @@ export default class Deck extends EventEmitter  {
   constructor() {
     super();
     this.crc = new Array(3 * 5);
-    this.enableCRC = true;
+    // this.enableCRC = true;
     process.on("uncaughtException", async(err) => {
       this.hw = undefined;
     })
@@ -36,8 +36,12 @@ export default class Deck extends EventEmitter  {
       this.hw = await openStreamDeck(l.path, {
         resetToLogoOnClose: true,
       })
-      this.hw.on("down", this.onKeyDown);
-      this.hw.on("up", this.onKeyUp);
+      if(this.hw.listenerCount("down") === 0) {
+        this.hw.on("down", this.onKeyDown);
+      }
+      if(this.hw.listenerCount("up") === 0) {
+        this.hw.on("up", this.onKeyUp);
+      }
     }
   }
   onKeyDown = (keyIndex: number) => {
@@ -47,6 +51,7 @@ export default class Deck extends EventEmitter  {
     this.emit("up", keyIndex);
   }
   reset = async() => {
+    
     this.hw = undefined;
     await this.initialise();
   }

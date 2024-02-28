@@ -4,7 +4,16 @@ import {v4} from "uuid";
 import waterfall from "./utils/waterfall";
 import moment from "moment";
 import {Canvas, CanvasRenderingContext2D, NodeCanvasRenderingContext2DSettings, createCanvas} from "canvas";
+import SysTray from "systray";
+import path from "path";
 
+import fs from "fs/promises";
+
+
+async function base64File(path: string) {
+  const data = await fs.readFile(path);
+  return `${data.toString("base64")}`;
+}
 
 export class Fade {
   from: any;
@@ -169,16 +178,68 @@ export class Engine extends LayerGroup {
 
     this.fps = 10;
   }
+  createMenu = async() => {
+    try {
+      const icon = await base64File(path.resolve(process.cwd(), "./images/icons/idea.png"));
+      const systray = new (SysTray as any).default({
+        menu: {
+          // you should using .png icon in macOS/Linux, but .ico format in windows
+          icon,
+          title: "CodeDeck",
+          tooltip: "Tips",
+          items: [{
+              title: "Reset",
+              tooltip: "Reset the deck",
+              checked: false,
+              enabled: true
+          }, {
+              title: "Exit",
+              tooltip: "exut",
+              checked: false,
+              enabled: true
+          }]
+        },
+        debug: false,
+        copyDir: true, // copy go tray binary to outside directory, useful for packing tool like pkg.
+      });
+      systray.onClick(action => {
+        if (action.seq_id === 0) {
+          this.deck.reset();
+        }
+        if (action.seq_id === 1) {
+          process.exit(0);
+        }
+      });
+    } catch(err: any) {
+      console.log("errr", err);
+    }
 
+  }
 
   async start() {
-    await this.deck.initialise();
-    this.deck.on("down", (ki) => this.onKeyDown(ki));
-    this.deck.on("up", (ki) => this.onKeyUp(ki));
+    await this.createMenu();
+    this.monitorDeck();
+    // await this.deck.initialise();
+    if(this.deck.listenerCount("down") === 0) {
+      this.deck.on("down", (ki) => this.onKeyDown(ki));
+    }
+    if(this.deck.listenerCount("up") === 0) {
+      this.deck.on("up", (ki) => this.onKeyUp(ki));
+    }
     await this.initialise();
     this.beginUpdateCycle();
     this.beginRenderCycle();
     this.renderCanvas();
+  }
+  monitorDeck = async() => {
+    if (!this.deck.hw) {
+      try {
+        await this.deck.initialise();
+      } catch(err: any) {
+        // console.error(err);
+      }
+    }
+    setTimeout(() => this.monitorDeck(), 1000);
   }
   beginUpdateCycle = async() => {
     await this.beginUpdate();
@@ -190,13 +251,15 @@ export class Engine extends LayerGroup {
   }
   renderCanvas = async() => {
     try {
-      if (!this.renderToScreen && !this.clear) {
-        this.ctx.clearRect(0, 0, WIDTH, HEIGHT);
-        this.deck.renderCanvasCtx(this.ctx);
-        this.clear = true;
-      }
-      if (this.renderToScreen) {
-        this.deck.renderCanvasCtx(this.ctx);
+      if (this.deck.hw) {
+        if (!this.renderToScreen && !this.clear) {
+          this.ctx.clearRect(0, 0, WIDTH, HEIGHT);
+          this.deck.renderCanvasCtx(this.ctx);
+          this.clear = true;
+        }
+        if (this.renderToScreen) {
+          this.deck.renderCanvasCtx(this.ctx);
+        }
       }
     } catch(err: any) {
       console.error(err);

@@ -1,22 +1,40 @@
 {
+  "extends": "@tsconfig/node20/tsconfig.json",
   "compilerOptions": {
     "lib": ["ESNext"],
     "module": "esnext",
-    "target": "esnext",
+    "target": "es2022",
     "moduleResolution": "bundler",
     "moduleDetection": "force",
-    "allowImportingTsExtensions": true,
-    "noEmit": true,
-    "composite": true,
-    "strict": true,
-    "downlevelIteration": true,
+    "allowImportingTsExtensions": false,
+    "noEmit": false,
+    "composite": false,
+    "strict": false,
+    // "downlevelIteration": true,
     "skipLibCheck": true,
-    "jsx": "react-jsx",
-    "allowSyntheticDefaultImports": true,
-    "forceConsistentCasingInFileNames": true,
-    "allowJs": true,
-    "types": [
-      "bun-types" // add Bun global
-    ]
+    // "allowSyntheticDefaultImports": true,
+    // "forceConsistentCasingInFileNames": true,
+    "esModuleInterop": true,
+    "types": ["@types/node"],
+
+    "outDir": "lib/",
+    "sourceMap": true,
+    "declaration": true
+  },
+
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "**/*.spec.ts", "lib"],
+  "watchOptions": {
+    // Use native file system events for files and directories
+    "watchFile": "useFsEvents",
+    "watchDirectory": "useFsEvents",
+    // Poll files for updates more frequently
+    // when they're updated a lot.
+    "fallbackPolling": "dynamicPriority",
+    // Don't coalesce watch notification
+    "synchronousWatchDirectory": true
+    // Finally, two additional settings for reducing the amount of possible
+    // files to track  work from these directories
+    // "excludeFiles": ["node_modules/**/*", "lib/**/*"]
   }
 }
